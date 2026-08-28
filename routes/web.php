@@ -25,10 +25,11 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Phân quyền: Chỉ Super Admin mới có quyền truy cập CRUD Users
+| Phân quyền: Sử dụng Gate 'is-super-admin' trong UserController thay
+| cho middleware. Route không cần khai báo middleware ở đây nữa.
 |--------------------------------------------------------------------------
 */
-Route::resource('users', UserController::class)->middleware('superadmin');
+Route::resource('users', UserController::class);
 
 /*
 |--------------------------------------------------------------------------

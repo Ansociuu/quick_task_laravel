@@ -7,15 +7,20 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource (Sử dụng Eloquent ORM + Eager Loading tránh N+1 Query).
+     * Áp dụng Gate 'is-super-admin' thay thế middleware CheckSuperAdmin.
      */
     public function index()
     {
+        // Gate::authorize ném ra HTTP 403 nếu user không thỏa điều kiện Gate
+        Gate::authorize('is-super-admin');
+
         // Eager loading mối quan hệ tasks và tags để giải quyết triệt để N+1 Queries
         $users = User::withoutGlobalScopes()->with('tasks.tags')->get();
         return view('users.index', compact('users'));
@@ -49,17 +54,26 @@ class UserController extends Controller
 
     /**
      * Show the form for editing the specified resource.
+     * Áp dụng UserPolicy::update - chỉ chính user đó mới được sửa thông tin mình.
      */
     public function edit(User $user)
     {
+        // Policy 'update': nếu $authUser->id !== $user->id thì trả về HTTP 403
+        // Super Admin bypass rule này nhờ method before() trong UserPolicy
+        $this->authorize('update', $user);
+
         return view('users.edit', compact('user'));
     }
 
     /**
      * Update the specified resource in storage (Eloquent ORM + Form Request).
+     * Áp dụng UserPolicy::update - chỉ chính user đó mới được cập nhật thông tin mình.
      */
     public function update(UpdateUserRequest $request, User $user)
     {
+        // Kiểm tra Policy trước khi thực hiện update
+        $this->authorize('update', $user);
+
         $user->update($request->validated());
         return redirect()->route('users.show', $user->id)->with('success', 'Cập nhật người dùng thành công!');
     }
