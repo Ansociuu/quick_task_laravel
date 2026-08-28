@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource (Sử dụng Eloquent ORM + Eager Loading tránh N+1 Query).
      */
     public function index()
     {
-        $users = User::withoutGlobalScopes()->get();
+        // Eager loading mối quan hệ tasks và tags để giải quyết triệt để N+1 Queries
+        $users = User::withoutGlobalScopes()->with('tasks.tags')->get();
         return view('users.index', compact('users'));
     }
 
@@ -25,22 +28,16 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage (Sử dụng Eloquent ORM + Form Request).
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
-
-        $user = User::create($validated);
-        return redirect()->route('users.index')->with('success', 'Tạo người dùng thành công!');
+        $user = User::create($request->validated());
+        return redirect()->route('users.index')->with('success', 'Tạo người dùng mới thành công!');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource (Eloquent ORM Eager Loading).
      */
     public function show(User $user)
     {
@@ -53,29 +50,24 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        return response()->json(['message' => "Show edit form for user {$user->id}", 'user' => $user]);
+        return view('users.edit', compact('user'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage (Eloquent ORM + Form Request).
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|unique:users,email,' . $user->id,
-        ]);
-
-        $user->update($validated);
-        return response()->json($user);
+        $user->update($request->validated());
+        return redirect()->route('users.show', $user->id)->with('success', 'Cập nhật người dùng thành công!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (Eloquent ORM).
      */
     public function destroy(User $user)
     {
         $user->delete();
-        return response()->json(['message' => 'User deleted successfully']);
+        return redirect()->route('users.index')->with('success', 'Xóa người dùng thành công!');
     }
 }

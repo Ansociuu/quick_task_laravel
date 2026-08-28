@@ -2,18 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Task;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource (Sử dụng Query Builder với Join bảng users).
      */
     public function index()
     {
-        $tasks = Task::with(['user', 'tags'])->get();
-        return response()->json($tasks);
+        $tasks = DB::table('tasks')
+            ->join('users', 'tasks.user_id', '=', 'users.id')
+            ->select('tasks.*', 'users.name as user_name', 'users.email as user_email')
+            ->get();
+
+        return view('tasks.index', compact('tasks'));
     }
 
     /**
@@ -25,58 +31,90 @@ class TaskController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created resource in storage (Sử dụng Query Builder + Form Request).
      */
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_completed' => 'boolean',
-        ]);
+        $data = $request->validated();
+        $tags = $data['tags'] ?? [];
+        unset($data['tags']);
 
-        $task = Task::create($validated);
-        return response()->json($task, 201);
+        $data['created_at'] = now();
+        $data['updated_at'] = now();
+
+        $taskId = DB::table('tasks')->insertGetId($data);
+
+        // Nếu có tags truyền lên, chèn vào bảng pivot task_tag qua Query Builder
+        if (! empty($tags)) {
+            $pivotData = array_map(fn ($tagId) => [
+                'task_id' => $taskId,
+                'tag_id' => $tagId,
+            ], $tags);
+
+            DB::table('task_tag')->insert($pivotData);
+        }
+
+        $task = DB::table('tasks')->where('id', $taskId)->first();
+
+        return response()->json(['message' => 'Tạo task mới thành công!', 'task' => $task], 201);
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource (Sử dụng Query Builder).
      */
-    public function show(Task $task)
+    public function show(int $id)
     {
-        return response()->json($task->load(['user', 'tags']));
+        $task = DB::table('tasks')
+            ->join('users', 'tasks.user_id', '=', 'users.id')
+            ->select('tasks.*', 'users.name as user_name', 'users.email as user_email')
+            ->where('tasks.id', $id)
+            ->first();
+
+        if (! $task) {
+            abort(404, 'Task không tồn tại');
+        }
+
+        return view('tasks.show', compact('task'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Task $task)
+    public function edit(int $id)
     {
-        return response()->json(['message' => "Show edit form for task {$task->id}", 'task' => $task]);
+        $task = DB::table('tasks')
+            ->join('users', 'tasks.user_id', '=', 'users.id')
+            ->select('tasks.*', 'users.name as user_name')
+            ->where('tasks.id', $id)
+            ->first();
+
+        if (! $task) {
+            abort(404, 'Task không tồn tại');
+        }
+
+        return view('tasks.edit', compact('task'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified resource in storage (Sử dụng Query Builder + Form Request).
      */
-    public function update(Request $request, Task $task)
+    public function update(UpdateTaskRequest $request, int $id)
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'is_completed' => 'boolean',
-        ]);
+        $data = $request->validated();
+        unset($data['tags']);
+        $data['updated_at'] = now();
 
-        $task->update($validated);
-        return response()->json($task);
+        DB::table('tasks')->where('id', $id)->update($data);
+
+        return redirect()->route('tasks.show', $id)->with('success', 'Cập nhật task thành công!');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage (Sử dụng Query Builder).
      */
-    public function destroy(Task $task)
+    public function destroy(int $id)
     {
-        $task->delete();
-        return response()->json(['message' => 'Task deleted successfully']);
+        DB::table('tasks')->where('id', $id)->delete();
+        return redirect()->route('tasks.index')->with('success', 'Xóa task thành công!');
     }
 }
