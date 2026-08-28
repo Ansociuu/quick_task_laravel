@@ -1,0 +1,60 @@
+/* Import FontAwesome icons */
+@import '@fortawesome/fontawesome-free/css/all.css';
+
+/* Custom SCSS Variables */
+$primary-color: #4f46e5;
+$secondary-color: #06b6d4;
+$success-color: #10b981;
+$warning-color: #f59e0b;
+$danger-color: #ef4444;
+$dark-bg: #1e1e2d;
+$card-border-radius: 12px;
+
+/* Mixin for Glassmorphism & Shadow */
+@mixin card-shadow {
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: $card-border-radius;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Light Bootstrap Dashboard Custom Theme */
+.custom-dashboard-card {
+  @include card-shadow;
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  padding: 1.5rem;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .card-header-title {
+    color: #111827;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+}
+
+/* Status Badges */
+.badge-custom {
+  padding: 0.35em 0.65em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 50rem;
+
+  &-active {
+    background-color: rgba($success-color, 0.15);
+    color: $success-color;
+  }
+
+  &-pending {
+    background-color: rgba($warning-color, 0.15);
+    color: $warning-color;
+  }
+
+  &-admin {
+    background-color: rgba($primary-color, 0.15);
+    color: $primary-color;
+  }
+}
