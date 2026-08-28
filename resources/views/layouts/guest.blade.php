@@ -22,6 +22,13 @@
                 </a>
             </div>
 
+            <!-- Language Switcher -->
+            <div class="mt-4 flex items-center space-x-3 text-sm font-medium">
+                <span class="text-gray-500">{{ __('messages.language') }}:</span>
+                <a href="{{ route('lang.switch', 'en') }}" class="px-3 py-1 rounded-md transition-colors {{ app()->getLocale() == 'en' ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">🇬🇧 {{ __('messages.english') }}</a>
+                <a href="{{ route('lang.switch', 'vi') }}" class="px-3 py-1 rounded-md transition-colors {{ app()->getLocale() == 'vi' ? 'bg-indigo-600 text-white font-semibold shadow-sm' : 'bg-gray-200 text-gray-700 hover:bg-gray-300' }}">🇻🇳 {{ __('messages.vietnamese') }}</a>
+            </div>
+
             <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                 {{ $slot }}
             </div>

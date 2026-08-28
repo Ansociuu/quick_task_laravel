@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
@@ -8,6 +9,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Route chuyển đổi ngôn ngữ (Tiếng Việt / Tiếng Anh)
+Route::get('/lang/{locale}', [LanguageController::class, 'switchLanguage'])->name('lang.switch');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
