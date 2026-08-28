@@ -12,8 +12,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-        return response()->json($users);
+        $users = User::withoutGlobalScopes()->get();
+        return view('users.index', compact('users'));
     }
 
     /**
@@ -36,7 +36,7 @@ class UserController extends Controller
         ]);
 
         $user = User::create($validated);
-        return response()->json($user, 201);
+        return redirect()->route('users.index')->with('success', 'Tạo người dùng thành công!');
     }
 
     /**
@@ -44,7 +44,8 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return response()->json($user->load('tasks'));
+        $user->load('tasks.tags');
+        return view('users.show', compact('user'));
     }
 
     /**

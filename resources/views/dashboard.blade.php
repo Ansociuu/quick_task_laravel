@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Dashboard Stats Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Card 1 -->
+                <!-- Card 1: Users Management -->
                 <div class="custom-dashboard-card">
                     <div class="flex items-center justify-between">
                         <div>
@@ -20,14 +20,17 @@
                             <i class="fa-solid fa-users text-2xl"></i>
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center text-xs">
+                    <div class="mt-4 flex items-center justify-between">
                         <span class="badge-custom badge-custom-admin">
                             <i class="fa-solid fa-user-shield me-1"></i> Admin System
                         </span>
+                        <a href="{{ route('users.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                            Quản lý Users <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Card 2 -->
+                <!-- Card 2: Tasks Management -->
                 <div class="custom-dashboard-card">
                     <div class="flex items-center justify-between">
                         <div>
@@ -38,10 +41,13 @@
                             <i class="fa-solid fa-list-check text-2xl"></i>
                         </div>
                     </div>
-                    <div class="mt-4 flex items-center text-xs">
+                    <div class="mt-4 flex items-center justify-between">
                         <span class="badge-custom badge-custom-active">
                             <i class="fa-solid fa-circle-check me-1"></i> 32 Completed
                         </span>
+                        <a href="{{ route('tasks.index') }}" class="text-xs font-semibold text-cyan-600 hover:text-cyan-800 flex items-center gap-1">
+                            Quản lý Tasks <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </a>
                     </div>
                 </div>
 

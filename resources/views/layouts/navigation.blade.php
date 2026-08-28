@@ -15,6 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                        <i class="fa-solid fa-users me-1 text-gray-400"></i> Users
+                    </x-nav-link>
+                    <x-nav-link :href="route('tasks.index')" :active="request()->routeIs('tasks.*')">
+                        <i class="fa-solid fa-list-check me-1 text-gray-400"></i> Tasks
+                    </x-nav-link>
                 </div>
             </div>
 
