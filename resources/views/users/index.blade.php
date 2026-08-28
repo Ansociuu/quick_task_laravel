@@ -20,6 +20,20 @@
         </div>
     </div>
 
+    {{-- Flash messages (Transaction success / error) --}}
+    @if(session('success'))
+        <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium">
+            <i class="fa-solid fa-circle-check text-green-500 text-base"></i>
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="flex items-center gap-3 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">
+            <i class="fa-solid fa-circle-xmark text-red-500 text-base"></i>
+            {{ session('error') }}
+        </div>
+    @endif
+
     <!-- Users Data Table -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">

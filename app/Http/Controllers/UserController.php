@@ -6,6 +6,8 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -63,11 +65,44 @@ class UserController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage (Eloquent ORM).
+     * Remove the specified resource from storage.
+     *
+     * Sử dụng DB::transaction để đảm bảo tính nguyên vẹn dữ liệu (Data Integrity):
+     * - Xóa tất cả bản ghi pivot task_tag liên quan đến tasks của user.
+     * - Xóa tất cả tasks của user.
+     * - Xóa user.
+     *
+     * Nếu bất kỳ bước nào thất bại, toàn bộ thao tác sẽ được ROLLBACK,
+     * đảm bảo CSDL không rơi vào trạng thái không nhất quán.
      */
     public function destroy(User $user)
     {
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'Xóa người dùng thành công!');
+        try {
+            DB::transaction(function () use ($user) {
+                // Bước 1: Lấy ID tất cả tasks của user này
+                $taskIds = $user->tasks()->pluck('id');
+
+                // Bước 2: Xóa tất cả bản ghi trong bảng pivot task_tag liên quan
+                if ($taskIds->isNotEmpty()) {
+                    DB::table('task_tag')->whereIn('task_id', $taskIds)->delete();
+                }
+
+                // Bước 3: Xóa tất cả tasks của user
+                $user->tasks()->delete();
+
+                // Bước 4: Xóa user (nếu 3 bước trên đều thành công)
+                $user->delete();
+            });
+
+            return redirect()->route('users.index')
+                ->with('success', 'Đã xóa người dùng và toàn bộ tasks liên quan thành công!');
+
+        } catch (\Throwable $e) {
+            // Nếu có lỗi -> Transaction tự động ROLLBACK, không có gì bị xóa
+            Log::error("Lỗi khi xóa user #{$user->id}: " . $e->getMessage());
+
+            return redirect()->route('users.index')
+                ->with('error', 'Có lỗi xảy ra khi xóa người dùng. Vui lòng thử lại!');
+        }
     }
 }
