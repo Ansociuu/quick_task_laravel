@@ -14,7 +14,7 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Tự động tạo đầy đủ 7 routes chuẩn RESTful kèm theo route names (users.index, users.create...)
 */
-Route::resource('users', UserController::class);
+Route::resource('users', UserController::class)->middleware('superadmin');
 
 /*
 |--------------------------------------------------------------------------
